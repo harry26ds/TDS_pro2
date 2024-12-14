@@ -195,7 +195,8 @@ def linear_regression(data, numerical_cols, target_col):
 
 
 # Principal Component Analysis (PCA)
-def perform_pca_with_insight(data, numerical_cols, api_url, api_token):
+def perform_pca_with_insight(data, numerical_cols, api_url, api_token,output_dir):
+    
     # Perform PCA
     pca = PCA(n_components=2)
     reduced_data = pca.fit_transform(data[numerical_cols])
@@ -205,7 +206,8 @@ def perform_pca_with_insight(data, numerical_cols, api_url, api_token):
     plt.title("PCA Projection")
     plt.xlabel("Principal Component 1")
     plt.ylabel("Principal Component 2")
-    plt.savefig(os.path.join(output_dir,"pca_projection.png"))
+    pca_image_path = f"{output_dir}/pca_projection.png"
+    plt.savefig(pca_image_path)
     plt.close()
 
     # Interpret the PCA plot with LLM
@@ -228,7 +230,8 @@ def hypothesis_testing(data, col1, col2):
 
 
 # Correlation Analysis
-def correlation_with_llm(data, numerical_cols, api_url, api_token):
+def correlation_with_llm(data, numerical_cols, api_url, api_token,output_dir):
+    
     # Perform Correlation Analysis
     correlation_matrix = data[numerical_cols].corr()
 
@@ -236,7 +239,8 @@ def correlation_with_llm(data, numerical_cols, api_url, api_token):
     plt.figure(figsize=(10, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
     plt.title("Correlation Matrix")
-    plt.savefig(os.path.join(output_dir,"correlation_matrix.png"))
+    correlation_image_path = f"{output_dir}/correlation_matrix.png"
+    plt.savefig(correlation_image_path)
     plt.close()
 
     # Interpret the correlation matrix plot with LLM
@@ -258,7 +262,7 @@ def visualize_data(data, numerical_cols, categorical_cols, dataset_name="dataset
         plt.title(f"Distribution of {col}")
         plt.xlabel(col)
         plt.ylabel("Frequency")
-        plt.savefig(os.path.join(output_dir, f"{col}_distribution.png"))
+        plt.savefig(f"{output_dir}/{col}_distribution.png")
         plt.close()
     
     if len(numerical_cols) > 1:
@@ -275,7 +279,8 @@ def visualize_data(data, numerical_cols, categorical_cols, dataset_name="dataset
         plt.title(f"Distribution of {col}")
         plt.xlabel(col)
         plt.ylabel("Count")
-        plt.savefig(os.path.join(output_dir, f"{col}_count.png"))
+        countplot_path = f"{output_dir}/{col}_count.png"
+        plt.savefig(countplot_path)
         plt.close()
 
         
@@ -407,7 +412,8 @@ def main():
     if data.empty:
         print("Dataset loading failed. Exiting.")
         return
-
+    # Generate output directory based on dataset name (without file extension)
+    output_dir = get_output_dir(file_path)
     # Handle missing data
     data = handle_missing_data(data)
 
@@ -443,17 +449,17 @@ def main():
 
 
     # Perform PCA
-    perform_pca_with_insight(data, numerical_cols,api_url, api_token)
+    perform_pca_with_insight(data, numerical_cols,api_url, api_token,output_dir)
 
     # Correlation Analysis
-    correlation_with_llm(data, numerical_cols,api_url, api_token)
+    correlation_with_llm(data, numerical_cols,api_url, api_token, output_dir)
 
     # Hypothesis Testing
     if len(numerical_cols) >= 2:
         hypothesis_testing(data, numerical_cols[0], numerical_cols[1])
 
     # Visualize data
-    visualize_data(data, numerical_cols, categorical_cols)
+    visualize_data(data, numerical_cols, categorical_cols, dataset_name=file_path)
 
     # Summarize data
     summary = summarize_data(data, numerical_cols, categorical_cols)
@@ -464,8 +470,7 @@ def main():
     # Generate a story using the existing LLM function
     story = generate_story_with_llm(summary, insights, api_url, api_token)
 
-    # Generate output directory based on dataset name (without file extension)
-    output_dir = get_output_dir(file_path)
+   
     # Save everything to markdown
     save_markdown(summary, insights, story, file_path)
     print("Story and insights saved to README.md.")
