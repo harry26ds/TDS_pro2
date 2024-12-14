@@ -205,7 +205,7 @@ def perform_pca_with_insight(data, numerical_cols, api_url, api_token):
     plt.title("PCA Projection")
     plt.xlabel("Principal Component 1")
     plt.ylabel("Principal Component 2")
-    plt.savefig("pca_projection.png")
+    plt.savefig(os.path.join(output_dir,"pca_projection.png"))
     plt.close()
 
     # Interpret the PCA plot with LLM
@@ -236,7 +236,7 @@ def correlation_with_llm(data, numerical_cols, api_url, api_token):
     plt.figure(figsize=(10, 8))
     sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
     plt.title("Correlation Matrix")
-    plt.savefig("correlation_matrix.png")
+    plt.savefig(os.path.join(output_dir,"correlation_matrix.png"))
     plt.close()
 
     # Interpret the correlation matrix plot with LLM
@@ -248,34 +248,37 @@ def correlation_with_llm(data, numerical_cols, api_url, api_token):
 
 
 
-# Enhanced Visualizations
 def visualize_data(data, numerical_cols, categorical_cols, dataset_name="dataset.csv"):
+    output_dir = get_output_dir(dataset_name)  # Folder based on dataset name
 
-    output_dir = get_output_dir(dataset_name)
-
+    # Visualizing numerical columns
     for col in numerical_cols:
         plt.figure(figsize=(8, 5))
         sns.histplot(data[col], kde=True, bins=15, color="blue")
         plt.title(f"Distribution of {col}")
         plt.xlabel(col)
         plt.ylabel("Frequency")
-        plt.savefig(f"{output_dir}/{col}_distribution.png")
+        plt.savefig(os.path.join(output_dir, f"{col}_distribution.png"))
         plt.close()
-
+    
     if len(numerical_cols) > 1:
+        pairplot_path = os.path.join(output_dir, "pairplot.png")
         sns.pairplot(data[numerical_cols])
-        plt.savefig(os.path.join(output_dir, 'pairplot.png'))
+        plt.savefig(pairplot_path)
         plt.close()
-        print("Pairplot saved.")
+        print(f"Pairplot saved at {pairplot_path}.")
 
+    # Visualizing categorical columns
     for col in categorical_cols:
         plt.figure(figsize=(6, 4))
-        sns.countplot(x=col, data=data, palette="viridis")
+        sns.countplot(x=col, data=data, palette="viridis", hue=None, legend=False)
         plt.title(f"Distribution of {col}")
         plt.xlabel(col)
         plt.ylabel("Count")
-        plt.savefig(f"{output_dir}/{col}_count.png")
+        plt.savefig(os.path.join(output_dir, f"{col}_count.png"))
         plt.close()
+
+        
 
 #Fund=ction to interpret an imag using LLM
   # Add this import at the top of your code
